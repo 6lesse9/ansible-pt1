@@ -1,0 +1,49 @@
+---
+- name: Build server
+  hosts: build
+  become: yes
+
+  tasks:
+  - name: Install git
+    apt:
+      name: git
+      state: present
+
+  - name: Install maven
+    apt:
+      name: maven
+      state: present
+
+  - name: Github clone
+    git:
+      repo: https://github.com/miladhub/calculator-servlet-example.git
+      dest: /tmp/calculator-servlet-example/
+      clone: yes
+
+  - name: Build app
+    command: mvn --batch-mode -quiet install
+    args:
+      chdir: /tmp/calculator-servlet-example/
+
+  - name: Move artifact from build to master
+    synchronize:
+      mode: pull
+      src: /tmp/calculator-servlet-example/target/mycalcwebapp.war
+      dest: /tmp/
+
+- name: Prod server  
+  hosts: prod
+  become: yes
+
+  tasks:
+  - name: Install tomcat
+    apt:
+      name: tomcat9
+      state: present
+
+  - name: Move artifact from master to prod
+    synchronize:
+      mode: push
+      src: /tmp/mycalcwebapp.war
+      dest: /var/lib/tomcat9/webapps/
+---
