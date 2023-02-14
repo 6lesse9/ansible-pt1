@@ -46,4 +46,4 @@
       mode: push
       src: /tmp/mycalcwebapp.war
       dest: /var/lib/tomcat9/webapps/
----
+
